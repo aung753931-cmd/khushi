@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Khushiရဲ့ Mini Game ❤️</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090910;color:white;font-family:Arial,"Noto Sans Myanmar",sans-serif;min-height:100vh;overflow:hidden}
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.box{width:min(94vw,430px);text-align:center;background:linear-gradient(160deg,#181521,#100e17);
+border:1px solid #ffffff16;border-radius:30px;padding:25px 18px;box-shadow:0 20px 70px #000}
+h1{font-size:27px;margin:5px 0 10px}.pink{color:#ff72a4}.hint{color:#bdb7c0;font-size:14px;line-height:1.7}
+.pass-input{width:100%;margin-top:14px;padding:13px 16px;border-radius:16px;border:1px solid #ffffff24;
+background:#0e0c14;color:white;font-size:16px;text-align:center;outline:none}
+.pass-input:focus{border-color:#ff72a4}
+.error-msg{color:#ff6b8b;font-size:13px;min-height:20px;margin-top:8px}
+#home,#game{display:none}.score{font-size:16px;color:#ffabc6;margin:8px}.arena{height:390px;margin-top:10px;border-radius:24px;
+background:radial-gradient(circle at 50% 50%,#351d35,#15121d);position:relative;overflow:hidden;border:1px solid #ffffff12}
+.item{position:absolute;border:0;background:none;font-size:38px;cursor:pointer;transition:.08s;filter:drop-shadow(0 5px 8px #000)}
+.btn{border:0;border-radius:16px;padding:14px 20px;font-size:16px;font-weight:bold;margin-top:14px;cursor:pointer}
+.start{background:linear-gradient(90deg,#ff4f83,#a84dff);color:white;width:100%}.yes{background:#22b8a5;color:white;width:100%}
+.no{background:#292731;color:#aaa;width:100%;position:relative}
+#win,#choice{display:none}.winheart{font-size:68px;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.15)}}
+.card{background:#ffffff0d;border-radius:22px;padding:18px;margin-top:12px;line-height:1.8}
+.small{font-size:12px;color:#777;margin-top:12px}
+#choice{gap:10px}.choiceBtn{flex:1}
+</style>
+</head>
+<body>
+<div class="screen">
+<div class="box" id="lock">
+<div style="font-size:56px">🔐</div>
+<h1>Password <span class="pink">ထည့်ပါ</span></h1>
+<div class="hint">Game ထဲဝင်ဖို့ Password ကို ရိုက်ထည့်ပေးပါ။</div>
+<input type="password" id="passwordInput" class="pass-input" placeholder="Password ရိုက်ထည့်ပါ..." onkeydown="if(event.key==='Enter') checkPassword()">
+<div class="error-msg" id="errorMsg"></div>
+<button class="btn start" onclick="checkPassword()">🔓 Unlock Game</button>
+</div>
+
+<div class="box" id="home">
+<div style="font-size:60px">🧸</div>
+<h1>Khushiအတွက် <span class="pink">Mini Game</span> </h1>
+<div class="hint">စာတွေမဖတ်ရအောင် game လေးအရင်ကစားမယ် 😌<br>Heart <b>7</b> ခုကို ဖမ်းပြီး surprise ကို unlock လုပ်ပါ။</div>
+<button class="btn start" onclick="startGame()">🎮 Start Game</button>
+<div class="small">Hint: ပြောပြဘူး 😝</div>
+</div>
+
+<div class="box" id="game">
+<h1>💗 Hearts ဖမ်းမယ်!</h1>
+<div class="score">Score: <b id="score">0</b> / 7</div>
+<div class="hint">❤️ ကိုနှိပ်ပါ။ 7 ခုရရင် နောက်တစ်ဆင့်သွားမယ်။</div>
+<div class="arena" id="arena"></div>
+</div>
+
+<div class="box" id="win">
+<h1>Level Complete! 🎉</h1>
+<div class="winheart" class="card">💗</div>
+<div class="card" id="wincard">တော်လိုက်တာဗျာ🙈💐<br><b>နောက်ဆုံးတစ်ခုပဲ ရွေးပေးနော်…<br>ချစ်လား🥺💖</b></div>
+<div id="choice" style="display:flex">
+<button class="btn yes choiceBtn" onclick="accept()"> ချစ်တယ်💞 </button>
+<button class="btn no choiceBtn" id="noBtn" onclick="dodgeNo()">ချစ်ဘူး</button>
+</div>
+<div id="final" style="display:none" class="card"></div>
+<div class="small">No button ကတော့ နည်းနည်းရှက်နေတာ 😭</div>
+</div>
+</div>
+
+<script>
+// 👇 Change your password here
+const GAME_PASSWORD = "1372011";
+
+function checkPassword(){
+ const input = document.getElementById('passwordInput');
+ const error = document.getElementById('errorMsg');
+ if(input.value === GAME_PASSWORD){
+  error.textContent = '';
+  document.getElementById('lock').style.display = 'none';
+  document.getElementById('home').style.display = 'block';
+ } else {
+  error.textContent = 'Password မှားနေပါတယ် 🥺 ထပ်ကြိုးစားကြည့်ပါ';
+  input.value = '';
+  input.focus();
+ }
+}
+
+let score=0, timer;
+const arena=document.getElementById('arena');
+function startGame(){
+ document.getElementById('home').style.display='none';
+ document.getElementById('game').style.display='block';
+ spawn();
+}
+function spawn(){
+ if(score>=7){finish();return}
+ const x=Math.random()*82+5,y=Math.random()*82+5;
+ const b=document.createElement('button');b.className='item';b.textContent='❤️';
+ b.style.left=x+'%';b.style.top=y+'%';
+ b.onclick=()=>{score++;document.getElementById('score').textContent=score;b.remove();spawn()};
+ arena.appendChild(b);
+}
+function finish(){
+ document.getElementById('game').style.display='none';
+ document.getElementById('win').style.display='block';
+ document.getElementById('choice').style.display='flex';
+}
+let noCount=0;
+function dodgeNo(){
+ noCount++;
+ const b=document.getElementById('noBtn');
+ if(noCount===1){b.textContent='ဟင်? 🥺';b.style.transform='translateX(35px)'}
+ else if(noCount===2){b.textContent=' စဉ်းစားပါဦး 😭';b.style.transform='translateX(-40px)'}
+ else if(noCount===3){b.textContent='ဒီခလုတ်က ရှက်နေပြီး 🥺';b.style.transform='translateY(-8px)'}
+ else {b.textContent='🤍 စိတ်တိုင်းကျ ရွေးပါ';b.style.transform='none';}
+}
+function accept(){
+ document.getElementById('wincard').style.display='none';
+ document.getElementById('choice').style.display='none';
+ const f=document.getElementById('final');f.style.display='block';
+ f.innerHTML='🥹❤️ <b>Yay!သိသာပဲ😜</b><br><br>ဒါဆို ဒီနေ့ကနေ<br><b>ပိုကောင်းအောင် အတူကြိုးစားမယ်နော်</b> 🫶<br><br>ပြုံးလိုက်ပါအုံ 📸🥰';
+ for(let i=0;i<30;i++){let s=document.createElement('span');s.textContent=['❤️','💗','✨','🎀'][Math.floor(Math.random()*4)];
+ s.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-30px;font-size:${15+Math.random()*25}px;transition:transform 3s linear,opacity 3s`;
+ document.body.appendChild(s);setTimeout(()=>{s.style.transform='translateY(110vh) rotate(500deg)';s.style.opacity=0},50);setTimeout(()=>s.remove(),3100)}
+}
+</script>
+</body></html>
